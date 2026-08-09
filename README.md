@@ -53,6 +53,10 @@ Follow these instructions to run the entire project on your local machine.
 * **npm:** $\ge$ 10.0.0
 
 ### 2. Environment Setup
+
+> [!NOTE]
+> The environment values below are template placeholders and default parameters for local testing. They do not contain any private credentials or production passwords. Always ensure your real `.env` file containing production secrets is added to `.gitignore` and never committed.
+
 Create a `.env` file at the root of the project:
 ```bash
 cp .env.example .env
@@ -152,9 +156,9 @@ The `Job` database model maintains status tracking:
 
 ## Database Schema Documentation
 
-SQLite database relations are structured inside the [prisma/schema.prisma](prisma/schema.prisma) file.
+You can view the database schema structure below in both graphical (Entity Relationship Diagram) and tabular form.
 
-### Entity Relationship Diagram
+### Option A: Entity Relationship Diagram (Visual Model)
 ```mermaid
 erDiagram
     USER ||--o{ SESSION : owns
@@ -167,16 +171,120 @@ erDiagram
     USER_STORY ||--o{ TASK : contains
 ```
 
-### Table Structure Overview
-1. **User:** User credentials, names, and creation timestamps.
-2. **Session:** Cookie credentials connected to users with precise expiry dates.
-3. **Project:** Workspaces containing user stories and custom prefix keys.
-4. **Membership:** Junction table mapping User access permissions to Projects.
-5. **UserStory:** Modular requirements with priority fields, status tags, and story points.
-6. **Task:** Action items linked to user stories, tracking checklists, due dates, and drag reordering positions.
-7. **ActivityLog:** Auditing timeline tracking project modifications.
-8. **Notification:** User-facing alerts.
-9. **Job:** Persistent background queue tasks.
+### Option B: Tabular Database Schema (Detailed View)
+
+#### 1. `User` Table
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | String | Primary Key, Default CUID | Unique identifier for user |
+| `email` | String | Unique Index | User email address |
+| `name` | String | - | User display name |
+| `passwordHash` | String | - | Argon2id hashed password |
+| `createdAt` | DateTime | Default now | User creation timestamp |
+| `updatedAt` | DateTime | Auto-update | Timestamp of last user info modification |
+
+#### 2. `Session` Table
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | String | Primary Key, Default CUID | Unique session identifier |
+| `tokenHash` | String | Unique Index | Secure hash of session verification cookie |
+| `userId` | String | Foreign Key (User.id), Index | Reference to user owning the session |
+| `expiresAt` | DateTime | Index | Expiry date of the session |
+| `revokedAt` | DateTime | Nullable | Optional timestamp when session was canceled |
+| `createdAt` | DateTime | Default now | Session creation timestamp |
+
+#### 3. `Project` Table
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | String | Primary Key, Default CUID | Unique project workspace ID |
+| `name` | String | - | Project display name |
+| `key` | String | Unique Index | Auto-generated prefix code (e.g. `PROJ`) |
+| `description` | String | Nullable | Optional description |
+| `archived` | Boolean | Default false | Archiving toggle |
+| `ownerId` | String | Foreign Key (User.id), Index | Reference to project owner |
+| `createdAt` | DateTime | Default now | Project creation timestamp |
+| `updatedAt` | DateTime | Auto-update | Timestamp of last project edit |
+
+#### 4. `Membership` Table
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | String | Primary Key, Default CUID | Unique membership record ID |
+| `projectId` | String | Foreign Key (Project.id), Index | Reference to project workspace |
+| `userId` | String | Foreign Key (User.id), Index | Reference to participating user |
+| `role` | Enum (MembershipRole) | Default `MEMBER` | Role permissions (`OWNER`, `ADMIN`, `MEMBER`, `VIEWER`) |
+| `createdAt` | DateTime | Default now | Membership assignment timestamp |
+
+#### 5. `UserStory` Table
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | String | Primary Key, Default CUID | Unique user story ID |
+| `projectId` | String | Foreign Key (Project.id), Index | Reference to project workspace |
+| `assigneeId` | String | Foreign Key (User.id), Nullable, Index | Reference to assigned user |
+| `title` | String | - | Requirement title |
+| `description` | String | Nullable | Detailed markdown specifications |
+| `acceptanceCriteria` | String | Nullable | Optional lists of criteria |
+| `status` | Enum (StoryStatus) | Default `BACKLOG` | Status (`BACKLOG`, `TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`) |
+| `priority` | Enum (Priority) | Default `MEDIUM` | Priority (`LOW`, `MEDIUM`, `HIGH`) |
+| `storyPoints` | Int | Nullable | Sizing story points |
+| `position` | Float | Default 1000, Index | Ordering index for boards |
+| `archived` | Boolean | Default false | Archiving toggle |
+| `createdAt` | DateTime | Default now | User story creation timestamp |
+| `updatedAt` | DateTime | Auto-update | Timestamp of last requirements modification |
+
+#### 6. `Task` Table
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | String | Primary Key, Default CUID | Unique checklist task ID |
+| `storyId` | String | Foreign Key (UserStory.id), Index | Reference to parent user story |
+| `assigneeId` | String | Foreign Key (User.id), Nullable, Index | Reference to assigned task assignee |
+| `title` | String | - | Task text |
+| `description` | String | Nullable | Task details |
+| `status` | Enum (TaskStatus) | Default `BACKLOG` | Status (`BACKLOG`, `TODO`, `IN_PROGRESS`, `BLOCKED`, `IN_REVIEW`, `DONE`) |
+| `priority` | Enum (Priority) | Default `MEDIUM` | Priority (`LOW`, `MEDIUM`, `HIGH`) |
+| `dueDate` | DateTime | Nullable, Index | Target due date |
+| `position` | Float | Default 1000, Index | Drag-and-drop sort position |
+| `archived` | Boolean | Default false | Archiving toggle |
+| `createdAt` | DateTime | Default now | Task creation timestamp |
+| `updatedAt` | DateTime | Auto-update | Timestamp of last checklist modification |
+
+#### 7. `ActivityLog` Table
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | String | Primary Key, Default CUID | Unique activity log ID |
+| `projectId` | String | Foreign Key (Project.id), Index | Reference to project context |
+| `actorId` | String | Foreign Key (User.id), Nullable, Index | Reference to modifying user |
+| `storyId` | String | Foreign Key (UserStory.id), Nullable | Optional reference to changed story |
+| `taskId` | String | Foreign Key (Task.id), Nullable | Optional reference to changed task |
+| `action` | String | - | Key tag (e.g. `TASK_COMPLETED`) |
+| `summary` | String | - | Readable description of activity |
+| `createdAt` | DateTime | Default now, Index | Activity timestamp |
+
+#### 8. `Notification` Table
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | String | Primary Key, Default CUID | Unique notification ID |
+| `userId` | String | Foreign Key (User.id), Index | Reference to alerted user |
+| `type` | String | - | Category (e.g. `TASK_OVERDUE`) |
+| `title` | String | - | Notification title |
+| `body` | String | - | Alert description content |
+| `readAt` | DateTime | Nullable, Index | Reading timestamp |
+| `createdAt` | DateTime | Default now, Index | Notification dispatch timestamp |
+
+#### 9. `Job` Table
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | String | Primary Key, Default CUID | Unique job run ID |
+| `type` | String | - | Job worker execution key |
+| `payload` | String | - | JSON serialized task payload |
+| `status` | Enum (JobStatus) | Default `PENDING`, Index | Queue state |
+| `attempts` | Int | Default 0 | Executed retries count |
+| `maxAttempts` | Int | Default 5 | Retries limit threshold |
+| `availableAt` | DateTime | Default now, Index | Job execution start timeframe eligibility |
+| `startedAt` | DateTime | Nullable | Lock timestamp of start execution |
+| `completedAt` | DateTime | Nullable | Timestamp of finished execution |
+| `lastError` | String | Nullable | Error traceback description logging |
+| `createdAt` | DateTime | Default now | Job submission timestamp |
+| `updatedAt` | DateTime | Auto-update | Last status update timestamp |
 
 ---
 
