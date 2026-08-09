@@ -1,0 +1,202 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────
+   SprintGrid Design Tokens
+   Dark-green engineering SaaS palette
+────────────────────────────────────────────────────── */
+@theme {
+  --color-bg: #07110d;
+  --color-sidebar: #0a1811;
+  --color-surface: #10251a;
+  --color-surface-strong: #173424;
+  --color-border: rgb(157 225 165 / 0.14);
+  --color-text: #eaf4ec;
+  --color-muted: #91a797;
+  --color-soft: #b9cdbd;
+  --color-brand: #9ee47b;
+  --color-brand-hover: #b9f598;
+  --color-brand-dark: #69c55b;
+  --color-teal: #75c3a0;
+  --color-accent: #c8dc83;
+  --color-danger: #f87171;
+  --color-warning: #fbbf24;
+  --color-success: #4ade80;
+  
+  --font-sans: 'Inter', 'Geist', 'Avenir Next', 'Segoe UI', sans-serif;
+  --shadow-card: 0 22px 55px rgb(0 0 0 / 0.28);
+  
+  --topbar-height: 60px;
+  --sidebar-width: 240px;
+}
+
+/* ──────────────────────────────────────────────────────
+   Base Reset
+────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  margin: 0;
+  color-scheme: dark;
+}
+
+h1, h2, h3, h4, h5, h6, p { margin: 0; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font: inherit; }
+input, textarea, select {
+  font: inherit;
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #0d1b14 !important;
+  color: #eaf4ec !important;
+  padding: 6px 10px;
+}
+
+select option:hover,
+select option:focus,
+select option:active,
+select option:checked {
+  background-color: #173424 !important;
+  color: #9ee47b !important;
+}
+
+:focus-visible {
+  outline: 2px solid rgb(158 228 123 / 0.6);
+  outline-offset: 2px;
+}
+
+/* ──────────────────────────────────────────────────────
+   Scrollbar
+────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgb(158 228 123 / 0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgb(158 228 123 / 0.35); }
+
+/* ──────────────────────────────────────────────────────
+   App Shell
+────────────────────────────────────────────────────── */
+.app-shell {
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse at 80% -8%, rgb(105 197 91 / 0.16), transparent 40rem),
+    radial-gradient(ellipse at -5% 95%, rgb(56 120 77 / 0.15), transparent 35rem),
+    var(--color-bg);
+}
+
+/* ──────────────────────────────────────────────────────
+   TopBar
+────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--color-border);
+  background: rgb(7 17 13 / 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ──────────────────────────────────────────────────────
+   Sidebar
+────────────────────────────────────────────────────── */
+.sidebar {
+  position: sticky;
+  top: var(--topbar-height);
+  width: var(--sidebar-width);
+  height: calc(100dvh - var(--topbar-height));
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 12px 16px;
+  border-right: 1px solid var(--color-border);
+  background: rgb(10 24 17 / 0.78);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.sidebar::-webkit-scrollbar { display: none; }
+
+/* ──────────────────────────────────────────────────────
+   Status colours
+────────────────────────────────────────────────────── */
+.status-backlog   { color: #94a3b8; background: rgb(148 163 184 / 0.1); }
+.status-todo      { color: #93c5fd; background: rgb(147 197 253 / 0.1); }
+.status-in-progress { color: var(--color-brand); background: rgb(158 228 123 / 0.12); }
+.status-blocked   { color: var(--color-danger); background: rgb(248 113 113 / 0.12); }
+.status-in-review { color: var(--color-teal); background: rgb(117 195 160 / 0.12); }
+.status-done      { color: var(--color-success); background: rgb(74 222 128 / 0.12); }
+
+.priority-low     { color: var(--color-muted); }
+.priority-medium  { color: var(--color-warning); }
+.priority-high    { color: var(--color-danger); }
+
+/* ──────────────────────────────────────────────────────
+   Kanban Board
+────────────────────────────────────────────────────── */
+.kanban-board {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px 40px;
+  overflow-x: auto;
+  align-items: flex-start;
+  min-height: calc(100dvh - var(--topbar-height) - 60px);
+}
+
+.kanban-column {
+  flex-shrink: 0;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: rgb(10 24 17 / 0.6);
+}
+
+.kanban-card {
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: rgb(20 48 33 / 0.85);
+  cursor: grab;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+.kanban-card:hover {
+  border-color: rgb(158 228 123 / 0.28);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
+}
+.kanban-card.dragging {
+  opacity: 0.6;
+  cursor: grabbing;
+}
+
+/* ──────────────────────────────────────────────────────
+   Reduced Motion
+────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
