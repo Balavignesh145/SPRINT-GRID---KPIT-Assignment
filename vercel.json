@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://f38be613d1acfa.lhr.life/api/:path*"
+      "destination": "https://f534b19ee11f91.lhr.life/api/:path*"
     },
     {
       "source": "/((?!api).*)" ,
