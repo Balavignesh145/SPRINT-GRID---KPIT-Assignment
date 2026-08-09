@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://127.0.0.1:3000/api/:path*"
+      "destination": "https://f38be613d1acfa.lhr.life/api/:path*"
     },
     {
       "source": "/((?!api).*)" ,
