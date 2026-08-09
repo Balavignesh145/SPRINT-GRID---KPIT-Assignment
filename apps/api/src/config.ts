@@ -21,9 +21,10 @@ export function loadConfig(environment: NodeJS.ProcessEnv = process.env): AppCon
     throw new Error('SESSION_SECRET must be configured in production');
   }
 
+  const isProduction = config.NODE_ENV === 'production' || environment.RENDER === 'true' || !!environment.PORT;
   return {
     ...config,
-    API_HOST: environment.API_HOST ?? (config.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1'),
+    API_HOST: environment.API_HOST ?? (isProduction ? '0.0.0.0' : '127.0.0.1'),
     SESSION_SECRET: config.SESSION_SECRET ?? randomBytes(32).toString('hex')
   };
 }
