@@ -22,9 +22,14 @@ export function loadConfig(environment: NodeJS.ProcessEnv = process.env): AppCon
   }
 
   const isProduction = config.NODE_ENV === 'production' || environment.RENDER === 'true' || !!environment.PORT;
+  let apiHost = environment.API_HOST ?? (isProduction ? '0.0.0.0' : '127.0.0.1');
+  if (isProduction && apiHost === '127.0.0.1') {
+    apiHost = '0.0.0.0';
+  }
+
   return {
     ...config,
-    API_HOST: environment.API_HOST ?? (isProduction ? '0.0.0.0' : '127.0.0.1'),
+    API_HOST: apiHost,
     SESSION_SECRET: config.SESSION_SECRET ?? randomBytes(32).toString('hex')
   };
 }
