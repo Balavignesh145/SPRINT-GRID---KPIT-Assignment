@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://51c3db28c30092.lhr.life/api/:path*"
+      "destination": "https://sprint-grid-kpit-assignment.onrender.com/api/:path*"
     },
     {
       "source": "/((?!api).*)",
