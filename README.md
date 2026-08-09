@@ -1,5 +1,7 @@
 # SprintGrid — Agile Project Workspace
 
+[![Deploy to Render](https://render.com/images/deploy-to-render.svg)](https://render.com/deploy?repo=https://github.com/Balavignesh145/SPRINT-GRID---KPIT-Assignment)
+
 > Plan clearly. Execute confidently. Ship together.
 
 SprintGrid is a full-stack, production-minded agile project management application designed for small engineering teams (3–10 users). It organizes work into a clean hierarchy: **Project** $\rightarrow$ **User Story** $\rightarrow$ **Task**, and features a Kanban-style dashboard, cursor-paginated activity logs, automatic in-app notifications, and a database-backed background job worker.
